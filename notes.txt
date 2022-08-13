@@ -1,0 +1,41 @@
+- Tạo pj đảy lên git
+	- Tạo thư mục dự án 'F:\MERN\project'
+	- Gõ cmd lên thư mục mở comman line
+		>>> git init
+			> để cấu hình thư mục \project thành git repo
+			> chạy xong lệnh thưc mục .get được tạo
+			
+		>>> git remote add origin https://github.com/mistertino/mern.git
+			> gắn thư mục /project trên pc tới git đã tạo 'https://github.com/mistertino/mern.git'
+			
+	- Tạo file và folder commit thử lên git
+		- Tạo các folder, file:
+			\project\css
+			\project\js
+			\project\index.html		
+			
+		>>> git add .
+			> để add những gì sẽ đưa lên git
+			
+		>>> git status
+			> để xem git add ở bước trên đã xếp những thứ cần đẩy lên git đúng chưa	
+			
+		>>> git commit -m "commit html css js"
+			> tạo một hành động gói hết các thứ bước trên lại để chuẩn bị push lên git
+			
+		>>> git branch -M main
+			> chỉ định một một nhánh (một nơi) chưa cột sẽ commit lên
+			
+		>>> git push -u origin main
+			> đẩy tất cả code lên github
+			
+		- Kiểm tra code đã lên git chưa?
+			> truy cập Code tab trong git để xem 'https://github.com/mistertino/mern'
+
+- 2. HTTP protocol
+	
+			
+			
+			
+			
+			
