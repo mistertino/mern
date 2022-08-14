@@ -1,4 +1,10 @@
-- Tạo pj đảy lên git
+- 	chỉ mục một hành động thực hiện
+>>> lệnh 
+> 	ghi chú
+'' 	liên kết url hoặc folder path
+**************************************
+
+- Tạo project đảy lên git
 	- Tạo thư mục dự án 'F:\MERN\project'
 	- Gõ cmd lên thư mục mở comman line
 		>>> git init
@@ -31,11 +37,104 @@
 			
 		- Kiểm tra code đã lên git chưa?
 			> truy cập Code tab trong git để xem 'https://github.com/mistertino/mern'
+			
+- Pull code tử git có sẵn repo về máy
+	- Tạo thư mục chứa code từ git repo về '\nha cau tai'
+	>>> git init
+		> để cấu hình thư mục \project thành git repo
+		> chạy xong lệnh thưc mục .get được tạo
+			
+	>>> git remote add origin https://github.com/mistertino/mern.git
+		> gắn git repo vào thư mục vừa tạo 'https://github.com/mistertino/mern.git'
+			
+	>>> git branch -M main
+		> chỉ định một một nhánh (một nơi) chưa cột sẽ commit lên
+		
+	>>> git pull origin main
+		> Kéo hết code từ nhánh main trên git repo về thư mục
+		
 
-- 2. HTTP protocol
+- HTTP protocol
+	- Đọc thêm tại: 'https://vi.wikipedia.org/wiki/Hypertext_Transfer_Protocol'
+- SSR & CSR
+	-SSR: Server Side Rendering
+		> Giao diện trả về từ sever
+	-CSR: Client Side Rendering
+		> Giao diện từ client
+- Install ExpressJS
+	- Tạo packet nodejs
+		- Mở Terminal trong VSCode
+		>>> npm init 
+			> khởi tạo package
+			
+		- Enter để bỏ qua name, version, description, entry point(file chạy ứng dụng), test command -- <có thể nhập để đổi tên>
+		>>> git repository: https://github.com/mistertino/mern
+			> khai báo git
+			
+		- Đặt keyword cho packet và Author 
+		
+		>>> Enter 
+			> để chấp nhận license
+			
+		>>> Enter 
+			> để confirm -> tạo ra file package.json
+		
+		- Tạo file index.js (cùng tên với tên trong file package.json: "main": "index.js") cùng thư mục chứa file package.json
+		
+	- Install ExpressJS
+		- Mở Terminal trong VSCode
+		
+		>>> npm install express
+		
+		- Paste đoạn code tại: 'https://expressjs.com/en/starter/hello-world.html'
+				const express = require('express')
+				const app = express()
+				const port = 3000
+
+				app.get('/', (req, res) => {
+					res.send('Hello World!')
+				})
+
+				app.listen(port, () => {
+				console.log(`Example app listening on port ${port}`)
+				})
+		
+		>>> node index.js
+			> Nhập lệnh tại terminal để chạy localhost
+			
+		- Truy cập địa chỉ 'http://localhost:3000' trên trình duyệt
+- Install Nodemon & inspector
+	- Install Nodemon
+		>>> npm install --save-dev
 	
+		- Vào file package.json thêm: "start": "nodemon index.js", vào phần: "Scrips"
+		
+		>>> npm start
+			> để chạy localhost (live sever)
 			
+		- Truy cập địa chỉ 'http://localhost:3000' trên trình duyệt	
+		
+	- Inspector	
+		- Thêm '--inspect' vào phần "start" vừa tạo trên thành  "start": "nodemon --inspect index.js",
+			> để debug app
 			
+		>>> npm start
+			> để chạy localhost (live sever)
+			
+		- Truy cập địa chỉ 'http://localhost:3000' trên trình duyệt	
+		
+		- Chuột phải Inspect trên trình duyệt -> Có phần debug của NodeJs tại Devtools 
+		
+		- Chọn tab Sources mở rộng đến file index.js
+			> để debug code
+
+- Install Morgan
+	>>> npm install morgan --save-dev
+	
+	- Khai báo const  morgan = require('morgan') vào index.js
+			
+	- app.use(morgan('combined')) tại index.js
+		> để log ra các request
 			
 			
 			
