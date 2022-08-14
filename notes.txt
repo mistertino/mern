@@ -136,5 +136,92 @@
 	- app.use(morgan('combined')) tại index.js
 		> để log ra các request
 			
+- 10. Template engine (handlebars)
+	>>> npm install express-handlebars
+	
+	- Tạo thư mục src rồi move file index.js vào -> src/index.js
+	
+	- Tại file package.json sửa lại đường dẫn tại 'main' và 'start' (index.js thành src/index.js)
+	
+	- Trong thư mục src tạo các file,folder như sau:
+		\src\resources\scss
+		\src\resources\views\home.handlebars
+			> để tạo cấu trức file, folder của template
+	
+	- Tại thư mục views tạo folder và file:
+		\views\layouts\main.handlebars
 			
+	- Require Handlebars
+		- Tại file index.js khai báo:
+			const { engine } = require("express-handlebars"); (mỗi ver handlebars require khác nhau)
+		
+		- Require Path
+			const path = require("path");
+		
+		- 	app.engine("handlebars", engine());
+			app.set("view engine", "handlebars");
+			app.set("views", path.join(__dirname, "resources/views"));
+
+			app.get("/", (req, res) => {
+
+			res.render("home");
+
+			});
+				> để chạy file home
+		
+		- Tại file main.handlebars:
+			- Tạo cấu trức file html
+				- Trong thẻ <body> thêm: '{{{body}}}'
+					> để lấy content của file home apend vào layout là file main
+		
+	- Config Handlebars
+		- Config cho file handlebars	
+			- Tại file index.js cấu hình như sau:
+				app.engine(".hbs", engine({extname : '.hbs'}));
+				app.set("view engine", ".hbs");
+					> để cấu hình định dạng file .handlebars thành .hbs (có thể cấu hình định dạng tuỳ ý) 
+			- Sửa định dạng .hbs cho các file .handlebars vừa tạo
+		
+	- Tại thư mục views tạo folder, file như sau:
+		\views\partials\header.hbs
+		\views\partials\footer.hbs
+		
+	- Để nạp 2 file vừa tạo ở trên vào main.hbs dùng nhưu sau:
+		{{> header}}
+		{{> footer}}
+			> Viết vào phần body (cấu trúc nạp: {{> tên file}} )
+
+- 11. Static file & SCSS
+	- Tạo folder, file như sau:
+		\src\public\img
+		
+	- Cấu hình static file
+		- Tại file index.js: app.use(express.static(path.join(__dirname, "public")))
+			> để trình duyệt gặp path trên url sẽ kiếm tra thư mực public
+				> VD: url = http://localhost:3000/img/logo.png 
+	
+	- SCSS
+		>>> npm install node-sass --save-dev
+		
+		- Tại thư mục scss tạo file app.scss
+		
+		- Tại thư mục public tạo folder: \public\css
+		
+		- Cấu hình compile từ file .scss sang folder css
+			- Tại file package.json thêm một scripts:
+				"watch": "node-sass --watch src/resources/scss/ --output src/public/css/"
 			
+			- Tại Terminal:
+				>>> npm run watch
+					> để compile file app.scss sang app.css (Luôn viết css vào app.scss)
+			
+		- Link CSS
+			- Tại file main.hbs: <link rel="stylesheet" href="/css/app.css">
+			
+- 12. Use Bootstrap
+	- Link Bootstrap:
+		- tại file views\layout\main.hbs link bootstrap:
+			>>> <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+			>>> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+				<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+				<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
