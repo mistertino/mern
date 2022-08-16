@@ -393,6 +393,6 @@
 			const siteRouter = require('./site');
 			app.use('/', siteRouter);
 			
-		-> Tạo router: Tạo Controller với phương thức rồi export -> Tạo router rồi require Controller rồi export -> Require Router rồi trỏ index tới router
+	-> Tạo router: Tạo Controller với phương thức rồi export -> Tạo router rồi require Controller rồi export -> Require Router rồi trỏ index tới router
 				
 		
