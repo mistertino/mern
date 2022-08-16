@@ -6,6 +6,8 @@ const { engine } = require("express-handlebars");
 const app = express()
 const port = 3000
 
+const route = require('./routes/index')
+
 app.use(express.urlencoded({
   extended: true
 }));
@@ -22,9 +24,9 @@ app.get("/", (req, res) => {
     res.render("home");
 });
 
-app.get("/news", (req, res) => {
-  res.render("news");
-});
+// app.get("/news", (req, res) => {
+//   res.render("news");
+// });
 
 app.get("/search", (req, res) => {
   // console.log(req.query);
@@ -35,6 +37,8 @@ app.post("/search", (req, res) => {
   console.log(req.body);
   res.send("");
 });
+
+route(app);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)

@@ -289,5 +289,110 @@
 					res.render("search");
 				});
 					> value của Form Data sẽ đc gắn vào biến body và trả về console.log
+					
+- 20. [MVC] Routes & Controllers
+	- Tại folder views tạo file news.hbs
 	
+	- Tại folder src tạo file, folder:
+		src\routes\news.js
+		src\app\controllers\NewsController.js
+			> để tách route tại file src/index.js  thành 2 phần route và controller theo MVC 
+	
+	- Tại file app\controllers\NewsController.js 
+		- Tạo 1 class:
+			class NewsController {
+				index(req, res){
+					res.render('news');
+				}
+			}
+				> để tách phần funtion từ file src\index.js qua controller
+		- Xuất controller ra
+			module.exports = new NewsController;
+				> để có thể require NewsController bên ngoài file
+	
+	
+	- Tại folder routes tạo file index.js (.\routes\index.js)
+	
+	- Tại file routes\index.js tạo 1 funtion route(app) và export nó
+		function route(app){
+
+		}
+
+		module.exports = route;
+	
+	- Tại file index.js ban đầu (\blog\index.js) require  file index.js trong folder routes vừa tạo
+		const route = require('./routes/index')
+	
+		- Truyền biến app từ file routes\index.js vào file \blog\index.js
+				route(app); 
+				> Sau đó có thể bỏ các route (app.get, app.post,....) đã tạo vào bắt đầu cấu hính route cho từng cái
+		
+	- Cấu hình router cho file routes\news.js
+		- Tại file routes\news.js Require express, use Router và export
+			const express = require('express');
+			const router = express.Router();
+
+			module.exports = router;	
+		
+		- Require Controllers (NewsController) được export từ NewsController.js
+			const newsController = require('../app/controllers/NewsController');
+				> để lấy đc funtion từ NewsController (index(req,res))
+		
+		- router.use('/', newsController.index);
+			> để trỏ router tới path (path tới news) với funtion index được gọi từ NewsController.js
+
+		- Tại file routes\index.js require file news.js đã được export
+			const newsRouter = require('./news');
+			
+			- Tại funtion route(app) :
+				app.use('/news', newsRouter);
+					> để trỏ route tới newsRouter (news.js) rồi newsRouter trỏ đến và sử dụng function tại NewsController
+		
+		- Cấu hình nhánh con của route news:
+			- Tại file NewsController.js thêm 1 phương thức (VD: show Detail):
+				show(req, res) {
+					res.send('News Detail');
+				}
+			
+			- Tại file news.js thêm router
+				router.use('/:slug', newsController.show);
+					> để trỏ router sau news/.. với phương thức show ( router nhánh sau luôn phải nằm trên router nhánh trước)
+						> để chạy truy cập address trên trình duyệt : http://localhost:3000/news/hoc-node (sau news/ điền bất kỳ)
+							> Áp dụng để tạo nhiều nhánh ( mỗi nhánh có router và controller)
+	
+	- Cấu hính những file ko nằm trong tài nguyên cụ thể (VD: Home, Search có thể đưa vào chung 1 controller)
+		- Tạo các file sau:
+			src\routes\site.js
+			src\app\controllers\SiteController.js
+			
+		- Tại SiteController.js làm tương tự như NewsController.js với 2 phương thức của home và search 
+			class SiteController {
+				home(req, res){
+					res.render('home');
+				}
+				search(req, res){
+					res.render('search');
+				}
+			}
+			module.exports = new SiteController;
+				> để export ra 2 phương thức home và search
+		
+		- Tại site.js làm tương tự như news.js require SiteController mới export và sử dụng 2 router cho home và search:
+			const express = require('express');
+			const router = express.Router();
+			const siteController = require('../app/controllers/SiteController');
+
+			router.use('/search', siteController.search);
+			router.use('/', siteController.home);
+
+			module.exports = router;
+				> để export ra 2 router
+				> Lưu ý: router nào nhánh sau thỳ ở trên nhánh trước ở dưới ('/' rồi mới đến '/search')
+		
+		- Tại file routes\index.js require file site.js rồi trỏ tới siteRouter
+			const siteRouter = require('./site');
+			app.use('/', siteRouter);
+			
+		-> Tạo router: Tạo Controller với phương thức rồi export -> Tạo router rồi require Controller rồi export -> Require Router rồi trỏ index tới router
+				
 		
