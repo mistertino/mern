@@ -463,5 +463,7 @@
 				> để connect tới Database
 					> Nếu connect failed có thế sửa localhost tại file db\index.js thành 127.0.0.1
 					
-			
+	- Create Model
+		- 
+	
 		
