@@ -403,7 +403,7 @@
 			app.use('/', siteRouter);
 			
 		-> Tạo router: Tạo Controller với phương thức rồi export -> Tạo router rồi require Controller rồi export -> Require Router rồi trỏ index tới router
-
+		
 - 21. [Windows] Install MongoDB
 	- URL: mongodb://localhost:27017
 		> để connect tới database
@@ -449,6 +449,9 @@
 		>>> npm install mongoose
 		
 	- Kết nối MongoDB
+		- Tạo một database trên MongoDB Compass:
+			- tên database: blod_education_dev , collection: courses
+			
 		- Tại folder src tại folder và file sau:
 			src\config\db\index.js
 			
@@ -456,7 +459,7 @@
 			const mongoose = require('mongoose');
 			async function connect(){
 				try{
-					await mongoose.createConnection('mongodb://localhost:27017/blog_education_dev');
+					await mongoose.connect('mongodb://localhost:27017/blog_education_dev');
 					console.log('Connected to MongoDB');
 				}
 			catch(e){
@@ -473,10 +476,145 @@
 					> Nếu connect failed có thế sửa localhost tại file db\index.js thành 127.0.0.1
 					
 	- Create Model
-		- 
+		- Tạo file, folder sau:
+			src\app\models\Coures.js
+		
+		- Tại file src\app\models\Coures.js :
+			const mongoose = require('mongoose');
+			const Schema = mongoose.Schema;
+			
+			const Course = new Schema({
+				name: {type: String, maxLength: 255},
+				description: {type: String, maxLength: 600},
+				image: {type: String, maxLength: 255 },
+				createAt: {type: Date, default: Date.now},
+				updateAt: {type: Date, default: Date.now},
+			});
+				> để khai báo Schema tương ứng với document tại collection của database blod_education_dev
+		
+			module.exports = mongoose.model('courses', Course);
+				> để export ra model chứa collection: 'courses', và Schema: Coures
+					> tên collection phải giống với collection tại database
+		
+		- Để trả data từ database cho client:
+			- Tại file src/app/controllers/SiteController.js:
+				- Trong hàm home(req,res)
+					thay thế render bằng :
+						Course.find({}, function (err, courses) {
+							if (!err) {
+								res.json(courses);
+							} else {
+								res.status(400).json({ err: 'ERROR!' });
+							}
+						});
+							> để trả về document của collection 'courses' dưới dạng json
+	
+- 26 Install JSON viewer extension
+	- Install JSON viewer extension trên trình duyệt
+		> để xem file json dễ hơn
+
+- 27. [CRUD] Read from DB
+	- Thêm 2 bản ghi tương tự bản ghi đầu tại collection courses
+		- html, JS
+		
+	- Xử lý data từ database (map data sang dạng Object bình thường)
+		- Tạo file, folder:
+			src\util\mongoose.js
+		
+		- Tại src\util\mongoose.js
+			module.exports = {
+				multipleMongooseToObject: function (mongoose) {
+					return mongoose.map((mongoose) => mongoose.toObject());
+				},
+				// Để sử dụng cho array document
+			mongooseToObject: function (mongoose) {
+					return mongoose ? mongoose.toObject() : mongoose;
+				},
+				// để sử dụng cho 1 document
+			};
+				> để export ra hàm xử lý document cho mongoose
+			
+	- Tại file src\app\controllers\SiteController.js:
+		- Require funtion multipleMongooseToObject từ file src\util\mongoose.js vừa tạo
+			const { multipleMongooseToObject } = require('../../util/mongoose');
+		
+		- sửa phương thức home như sau:
+			home(req, res, next) {
+				Course.find({})
+				.then((courses) => {
+					res.render('home', {
+						courses: multipleMongooseToObject(courses), // để render ra trang home và mang kèm theo data courses được xử lý bởi hàm multipleMongooseToObject
+					});
+				})
+				.catch(next);
+			}
+				> để render ra trang home và mang kèm theo data courses được xử lý bởi hàm multipleMongooseToObject
+	
+	- Truyền data vào views (file.hbs - handlebars)
+		- Tại file views\home.hbs sử dụng Component/Card của bootstrap để tạo giao diện với 1 card chứa (image, name, description)
+		
+		- Để truyền data vào home.hbs (tạm gọi là giao diện home) sử dụng cấu trúc: (đọc thêm tại: https://handlebarsjs.com/guide/#evaluation-context)
+			{{#each 'courses'}}
+				{{this}}
+			{{/each}}
+				> courses: biến chứa data được truyền vào từ SiteController
+				> dùng each để lặp các document có trong collection (các bản ghi có trong bảng) (Tại database của mình có 3 document: nodejs, html,js)
+				> this : để gọi ra các field với value trong document (VD: courses.name để gọi ra value của name trong từng document) 
+				- VD: <h1>{{courses.name}}</h1>, <img href"{{courses.imgae}}">
+
+- 28. Course detail page
+	- Tạo thêm các field: slug, videoID tại các document trong database
+		vd: slug : nodejs
+				
+	- Tại file src\app\models\Coures.js thêm vào Schame:
+		slug: {type: String},
+			> để thêm field vào model 
+	
+	- Tạo 1 route và 1 controller 1 views cho courses :
+		src\app\controllers\SourceController.js
+		src\routes\courses.js
+		src\resources\views\courses\show.hbs
+		
+		- Tại file src\app\controllers\SourceController.js cấu hình để truyền data như sau:
+				const Course = require('../models/Course');
+				const { mongooseToObject } = require('../../util/mongoose');	
+				class CoursesController {
+					show(req, res, next) {
+						Course.findOne({ slug: req.params.slug }) //lấy 1 slug với slug: req.params.slug là query đc lấy về từ url dưới dạng query parameters - VD: url: ...../sources/nodejs quert parameters trả về là nodejs
+							.then(courses => { 
+								res.render('courses/show', { courses: mongooseToObject(courses) }) //để render ra trang show với truyền data được xử lý theo từng document trong courses - vì đang làm theo từng slug
+							})
+							.catch(next);
+					}
+				}
+				module.exports = new CoursesController();
+					> để render ra trang show với data ứng với slug trong từng document
+						> VD: slug là /nodejs -> data truyền vào show sẽ tương ứng với document nào có slug là nodejs
+				
+		- Tại file src\routes\courses.js cấu hình route như sau:
+			- require express, router như các bước tạo route
+			
+			- Cấu hình:
+				router.get('/:slug', coursesController.show);
+					> để trỏ route tới /:slug với coursesController.show được require từ CourseController.js 
+						> slug là nhánh phát sinh bất kỳ của nhánh /courses
+		
+		- Tại file src\routes\index.js thêm:
+			const coursesRouter = require('./couses');
+			app.use('/courses', coursesRouter);
+				> để trỏ đường dẫn .../courses/:slug
+		
+		- Tại src\resources\views\courses\show.hbs:
+			- Tạo giao diện cho trang show 
+				- Sư dụng {{courses.'tên field'}} để truyền vào data từ document 
+					> VD: Truyền video từ Ytube với videoID trong database là ID video của YTube: sử dụng {{videoID}}
+						 <iframe width="1029" height="579" src="https://www.youtube.com/embed/{{courses.videoID}}.......
+			
+	
+	
+
 	
 		
-=======
-	-> Tạo router: Tạo Controller với phương thức rồi export -> Tạo router rồi require Controller rồi export -> Require Router rồi trỏ index tới router
+	
 				
 		
