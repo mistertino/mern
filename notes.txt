@@ -1,3 +1,12 @@
+- Source Tree:
+	- Tải 'sourcetree' để quản lý source code từ git:
+		https://www.sourcetreeapp.com/
+		
+		- Ctrl+O để mở thư mục 'F:\MERN\project'
+			> Vì folder dự án gắn với git sẵn rồi nên chỉ mở folder dự án là sourcetree sẽ tự nhận
+
+*******************************************************
+
 - 	chỉ mục một hành động thực hiện
 >>> lệnh 
 > 	ghi chú
