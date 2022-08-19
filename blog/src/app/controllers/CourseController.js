@@ -9,6 +9,20 @@ class CoursesController {
             .catch(next);
         // res.send('Course Detail');
     }
+
+        //[Get] /course/create
+    create(req, res, next) {
+        res.render('courses/create')
+    }
+        //[POST] /course/store
+    store(req, res, next) {
+        // res.json(req.body)
+        const formData = req.body;
+        const courses = new Course(formData)
+        courses.save()
+        .then(() => res.redirect('/'))
+        
+    }
 }
 
 module.exports = new CoursesController();

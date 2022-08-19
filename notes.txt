@@ -559,8 +559,8 @@
 			{{/each}}
 				> courses: biến chứa data được truyền vào từ SiteController
 				> dùng each để lặp các document có trong collection (các bản ghi có trong bảng) (Tại database của mình có 3 document: nodejs, html,js)
-				> this : để gọi ra các field với value trong document (VD: courses.name để gọi ra value của name trong từng document) 
-				- VD: <h1>{{courses.name}}</h1>, <img href"{{courses.imgae}}">
+				> this : để gọi ra các field với value trong document (VD: this.name để gọi ra value của name trong từng document) 
+				- VD: <h1>{{this.name}}</h1>, <img href"{{this.imgae}}">
 
 - 28. Course detail page
 	- Tạo thêm các field: slug, videoID tại các document trong database
@@ -609,6 +609,66 @@
 				- Sư dụng {{courses.'tên field'}} để truyền vào data từ document 
 					> VD: Truyền video từ Ytube với videoID trong database là ID video của YTube: sử dụng {{videoID}}
 						 <iframe width="1029" height="579" src="https://www.youtube.com/embed/{{courses.videoID}}.......
+
+- 29. [CRUD] Create new course
+	- Tạo route courses/create:
+		- Tại src\routes\courses.js thêm:
+			router.get('/create', coursesController.create);
+				> để tạo một route tới urses/create
+				
+	- Tạo phương thức create tại CourseController:
+		- Tại src\app\controllers\SourceController thêm phương thức create:
+			create(req, res, next) {
+				res.render('courses/create')
+			}	
+				> để tạo phương thức render ra trang create
+	
+	- Tạo view cho create
+		- Tạo file như sau:
+			src\resources\views\courses\create.hbs
+			
+		- Dùng bootstrap tạo giao diện với 1 form có 5 input(Tên khoá học, Mô tả kháo học, Link image, Video ID, Level): 
+			- mỗi input thêm một attributes name (với name ứng với field trong database: VD name='description')
+			
+			- Tại thẻ <form> thêm method="post" action="/courses/store"
+				> để set phương thức submit của form là post 
+	
+	- Tạo cấu trúc Schame để nhận dữ liệu vào database:
+		- Tại file src\app\models\Coures.js thêm vào Schame như sau:
+			const Course = new Schema({
+				name: { type: String },
+				description: { type: String },
+				image: { type: String },
+				videoID: {type: String},
+				level: {type: String},
+				slug: {type: String, slug: 'name', unique: true}, 
+			}, {
+				timestamps: true
+			});
+				> để database nhận được dữ liệu thỳ phải cấu trúc trước các field để lưu vào database
+			
+			- Để field slug có thể tự nhận data từ field name ta cần cài đặt mongoose-slug-generator:
+				>>> npm install mongoose-slug-generator --save
+				
+				- Tại file src\app\models\Coures.js khai báo như sau:
+					const slug = require('mongoose-slug-generator');
+					mongoose.plugin(slug);
+						> để khi có slug với data trùng nhau, plugin sẽ tự thêm vào slug một shortId ở sau
+	- Tạo phương thức POST:
+		- Tại src\app\controllers\SourceController thêm phương thức store
+			store(req, res, next) {
+				const formData = req.body; //Tạo biến formData với req.bod là dữ liệu dạng form data đã submit ở form trên
+				const courses = new Course(formData) // Tạo biến courses với Model chứa data từ biến formData
+				courses.save() //Lưu data vào database
+        .		then(() => res.redirect('/')) //chuyển hướng đến trang chử http://localhost:3000/
+			}
+			
+		- Tạo route tới	/courses/store với phương thức post
+			- Tại src\routes\courses.js thêm 1 route:
+				router.post('/store', coursesController.store);
+					> để trỏ route tới /courses/store với phương thức post và phương thức store đã tạo ở CourseController
+	
+		
 			
 	
 	

@@ -25,6 +25,11 @@ app.engine('.hbs', engine({ extname: '.hbs' }));
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'resources/views'));
 
+route(app);
+
+app.listen(port, () => {
+    console.log(`App listening on port ${port}`);
+});
 // app.get("/", (req, res) => {
 //     res.render("home");
 // });
@@ -43,8 +48,3 @@ app.set('views', path.join(__dirname, 'resources/views'));
 //   res.send("");
 // });
 
-route(app);
-
-app.listen(port, () => {
-    console.log(`App listening on port ${port}`);
-});
