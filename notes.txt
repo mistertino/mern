@@ -614,7 +614,7 @@
 	- Tạo route courses/create:
 		- Tại src\routes\courses.js thêm:
 			router.get('/create', coursesController.create);
-				> để tạo một route tới urses/create
+				> để tạo một route tới urses/create (Lưu ý: vẫn phải require express, Router như các route khác và export))
 				
 	- Tạo phương thức create tại CourseController:
 		- Tại src\app\controllers\SourceController thêm phương thức create:
@@ -660,15 +660,130 @@
 				const formData = req.body; //Tạo biến formData với req.bod là dữ liệu dạng form data đã submit ở form trên
 				const courses = new Course(formData) // Tạo biến courses với Model chứa data từ biến formData
 				courses.save() //Lưu data vào database
-        .		then(() => res.redirect('/')) //chuyển hướng đến trang chử http://localhost:3000/
+        .		.then(() => res.redirect('/')) //chuyển hướng đến trang chử http://localhost:3000/
 			}
 			
 		- Tạo route tới	/courses/store với phương thức post
 			- Tại src\routes\courses.js thêm 1 route:
 				router.post('/store', coursesController.store);
-					> để trỏ route tới /courses/store với phương thức post và phương thức store đã tạo ở CourseController
+					> để trỏ route tới /courses/store với phương thức post và phương thức store đã tạo ở CourseController (Lưu ý: vẫn phải require express, Router như các route khác và export)
+
+- 30. [CRUD] Update course	
+	- Tạo route, controller, view cho /me/stored/courses
+		- Tạo 1 file src\resources\views\me\stored-courses.hbs (tạo thêm folder me)
+			- Dùng bootstrap tạo giao diện table với 4 cột:
+				<thead>
+					<tr>
+						<th scope="col">#</th>
+						<th scope="col">Tên khoá học</th>
+						<th scope="col">Level</th>
+						<th scope="col">Thời gian tạo</th>
+						<th></th>
+					</tr>
+				</thead>
+			
+			- Tại src\resources\views\courses\edit.hbs
+				- Tạo giao diện tương tự create.hbs (các input tương tự)
 	
+		- Tạo 1 file src\routes\me.js
+			const meController = require('../app/controllers/MeController');
+			router.get('/stored/courses', meController.storedCourses);
+				> để tạo 1 route tới /stored/courses với MeController, và phương thức storedCourses (Lưu ý: vẫn phải require express, Router như các route khác và export)
 		
+		- Tại src\routes\index.js 
+			const meRouter = require('./me');
+			app.use('/me', meRouter);
+				> để trỏ router tới /stored/courses => /me/stored/courses
+			
+		- Tạo 1 file src\app\controllers\MeController.js
+			- require model tương tự như các controller khác (Vì vẫn sử dụng model Course)
+			
+			class MeController {
+				storedCourses(req, res, next) {
+					Course.find({})
+						.then( courses => res.render('me/stored-courses', {courses: multipleMongooseToObject(courses)}))
+						.catch(next)
+        
+				}
+				> để tạo phương thức storedCourses cho route vửa tạo và render ra view stored-courses với data courses được truyền vào view
+			
+	- Truyền data vào table trong view stored-courses.hbs:
+		-Tại file src\resources\views\me\stored-courses.hbs thêm phần body của table:
+		<tbody>
+            {{#each courses}}
+            <tr>
+                <th scope="row">{{@index}}</th>
+                <td>{{this.name}}</td>
+                <td>{{this.level}}</td>
+                <td>{{this.createdAt}}</td>
+                <td>
+                    <button type="button" class="btn btn-light">
+                        <a style="text-decoration: none;" href="/courses/{{this._id}}/edit">Sửa</a>
+                    </button>
+                    <button type="button" class="btn btn-light">
+                        <a style="text-decoration: none;" href="">Xoá</a>
+                    </button>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+			> Sử dụng {{#each sources}} {{/each}} để lặp từng document trong database
+			> Sử dụng {{this.}} để lấy ra value của từng field trong document tương ứng (giá trị của từng trường trong bản ghi)
+			> href="/courses/{{this._id}}/edit" để dẫn nút sửa trỏ đến route edit với id tương ứng đc lấy từ document
+
+	- Tạo route, view edit:
+		- Tạo file src\resources\views\courses\edit.hbs
+			- Tạo giao diện tương tự file src\resources\views\courses\create.hbs
+				> để sửa dữ liệu tương ứng với dữ liệu đã tạo
+			
+		- Tại file src\routes\courses.js thêm 1 router:
+			router.get('/:id/edit', coursesController.edit);
+				> để trỏ tới /:id/edit với :id là value của field id được truyền vào và trỏ ở stored-courses.hbs
+				
+		- Tại src\app\controllers\SourceController.js thêm phương thức edit cho route vừa tạo
+			edit(req, res, next) {
+				Course.findById(req.params.id)
+					.then (courses => res.render('courses/edit', {
+					courses: mongooseToObject(courses)
+					}))
+					.catch(next)
+			}
+				> để render và data truyền vào view edit với id tương ứng với từng document (req.params.id là biến lấy id từ url dưỡi dạng query parameters)
+					> VD: Với id của document 1, view edit sẽ đc truyền data (là các field: value) của document 1
+			
+	- Truyền data vào view edit.hbs:
+		-Tại file src\resources\views\courses\edit.hbs:
+			- Tại các thẻ <input> thêm attributes value="{{courses.}}"
+				> để truyền vào các value từ data trong document ({{couses.name}},{{courses.description}},{{courses.image}},{{courses.videoID}},{{courses.level}})
+					> Lưu ý: Nếu truyền vào nhiều document thỳ mới dùng {{#each courses}}, {{this.}} để lặp qua từng document rồi mới dùng {{this.}} để gọi ra value tương ứng trong document còn ở đây đã chỉ rõ document được findById nên dùng {{courses.}} để gọi ra value luôn
+	
+	- Vì html ko hỗ trợ submit với phwuong thức put => phải dùng method-override của Express
+		>>> npm install method-override
+		
+		- Tại file src/index.js:
+			const methodOverride = require('method-override')
+			app.use(methodOverride('_method'))
+
+		- Tại thẻ <form> trong  file src\resources\views\courses\edit.hbs sửa như sau:
+			<form method="post" action="/courses/{{courses._id}}?_method=PUT">
+				> để submit form với phương thức PUT
+			
+		- Tạo route với phương thức put tại src\routes\courses.js :
+			router.put('/:id', coursesController.update);
+				> để trỏ route tới courses/:id với phương thức put và controller với phương thức update
+		
+		- Tạo phương thức update tại src\app\controllers\CourseController.js
+			update(req, res, next){
+				Course.updateOne({ _id: req.params.id}, req.body)
+					.then(() => res.redirect('/me/stored/courses'))
+					.catch(next)
+			}
+				> để update data đã nhập ở view edit.hbs và đã được lưu ở biến req.body (khi submit form data ở form được luu dưới dạng form data và gán vào biến body)
+				> req.params.id : là id đc lấy trên url 
+				> { _id: req.params.id}: để chỉ ra document có field và value tương ứng để update
+				> Sau khi update đc điều hướng (redirect) về view stored-courses.hbs
+			
+			
 			
 	
 	
