@@ -767,6 +767,7 @@
 		- Tại thẻ <form> trong  file src\resources\views\courses\edit.hbs sửa như sau:
 			<form method="post" action="/courses/{{courses._id}}?_method=PUT">
 				> để submit form với phương thức PUT
+				> ?_method=PUT: ghi đè (override) phương thức PUT cho phương thức POST của form
 			
 		- Tạo route với phương thức put tại src\routes\courses.js :
 			router.put('/:id', coursesController.update);
