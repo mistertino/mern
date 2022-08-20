@@ -783,6 +783,64 @@
 				> { _id: req.params.id}: để chỉ ra document có field và value tương ứng để update
 				> Sau khi update đc điều hướng (redirect) về view stored-courses.hbs
 			
+- 31. [CRUD] Delete course
+	- Tại file src\resources\views\me\stored-courses.hbs
+		- Dùng bootstrap tạo một nút xoá (cùng nằm trong thẻ <td> với nút sửa đã tạo) và tạo 1 modal (giao diện con) khi ấn nút xoá
+			> để tạo thông báo xác nhận xoá cho người dùng
+		
+	- Tại file src\routes\courses.js thêm một route với phương thức delete:
+		router.delete('/:id', coursesController.delete);	
+			> để trỏ route tới courses/:id với phương thức delete
+		
+	- Tại file src\app\controllers\CourseController.js thêm một phương thức delete cho route vừa tạo
+		delete(req, res, next) {
+			Course.deleteOne({ _id: req.params.id })
+				.then(()=> res.redirect('back'))
+				.catch(next)
+		}	
+			> Course.deleteOne({ _id: req.params.id }) : để tìm đến 1 document và xoá nó trong database với điều kiện field _id trong document trùng với id có trong document đó (id của document được lấy bởi req.params.id là id trên url)
+			> .then(()=> res.redirect('back')) : Sau khi xoá response được điều hướng (redirect) về trang trước ('back') hoặc ('/me/stored/courses')
+	
+	- Để lấy id của document khi ấn nút Xoá:
+		- Tại file src\resources\views\me\stored-courses.hbs 
+			- Tại thẻ <a> chứa nút Xoá thêm attributes: data-id="{{this._id}}"
+				<a style="text-decoration: none;" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-course-modal" href="">Xoá</a>
+					> để khi nhấn nút Xoá attributes data-id nhận được id của từng document được gọi ra bởi {{this.id}} (Vì nút Xoá cũng đang nằm trong vòng lặp {{#each courses}} được tạo để lấy dữ liệu của từng document ở Bài 30 )
+		
+		- Sử dụng JS để lấy id khi ấn nút Xoá và truyền vào modal (Có trên cách lấy data-whatever của bootstrap)
+			document.addEventListener('DOMContentLoaded', function() { //Khi nút Xoá được nhấn
+				var courseId; //Khai báo biến để nhận id
+
+				$('#delete-course-modal').on('show.bs.modal', function (event) { //#delete-course-modal là data-target trên nút xoá
+				  var button = $(event.relatedTarget)
+				  courseId = button.data('id') //gán giá trị của data-id đã tạo ở trên vào biến courseId
+				})
+			  })
+		
+	- Tại modal đã tạo ở trên:
+		- thêm id cho thẻ chứa nút xác nhận:
+			<button id="btn-delete-course" type="button" class="btn btn-danger">Xác nhận</button>
+	
+		- Trong function tại document.addEventListener('DOMContentLoaded', function() thêm:
+			var btnDeleteCourse = document.getElementById('btn-delete-course')
+				> để gán nút Xác nhận vừa tạo vào biến btnDeleteCourse
+		
+	- Để khi nhấn nút Xác nhận trên modal sẽ tạo ra phương thức delete được trỏ bởi route đã tạo:
+		- Tại file src\resources\views\me\stored-courses.hbs
+			- Tạo một form rỗng với name và method="POST"
+				<form name="delete-course-form" method="post"></form>
+					> để có thể truyền attributes action khi submit form thông qua nút Xác nhận
+			
+			-  Trong function tại document.addEventListener('DOMContentLoaded', function() thêm:
+				var deleteForm = document.forms['delete-course-form']
+					> để gán form vừa tạo vào biến deleteForm
+					
+				btnDeleteCourse.onclick = function () {
+					deleteForm.action = '/courses/' + courseId + '?_method=DELETE'
+					deleteForm.submit()
+				} 
+					> để khi nút Xác nhận được nhấn (btnDeleteCourse.onclick) thỳ thẻ <form> sẽ được thêm action (deleteForm.action) và submit(deleteForm.submit())
+					> '/courses/' + courseId + '?_method=DELETE' : gọi route tới /courses/:id?_method=DELETE với :id là biến courseId và ?_method=DELETE là override sang phương thức DELETE đã làm tương tự với PUT ở bài 30
 			
 			
 	

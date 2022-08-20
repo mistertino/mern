@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
+{{!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
     <a class="navbar-brand" href="http://localhost:3000/">Tino Blog</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -15,7 +15,42 @@
         <li class="nav-item">
           <a class="nav-link" href="http://localhost:3000/me/stored/courses">Khoá học của tôi</a>
         </li>
-        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Dropdown
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <li><a class="dropdown-item" href="#">Action</a></li>
+            <li><a class="dropdown-item" href="#">Another action</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="#">Something else here</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav> --}}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">   
+    <a class="navbar-brand" href="http://localhost:3000/">Tino Blog</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav ml-auto">
+        <li class="nav-item dropdown ml-auto">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
+            <img class="use-avt" src="https://scontent.fhan14-1.fna.fbcdn.net/v/t1.6435-9/154532547_1206441113122048_5960386349563893119_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=09cbfe&_nc_ohc=n3CgkzZDndAAX8ptNAN&_nc_ht=scontent.fhan14-1.fna&oh=00_AT8Z_aHeEsiNaKkAe5JysUolCh4aV0RYWxNSLrOJiN6R6Q&oe=6326195F" alt="">
+            MisterTino
+          </a>
+          <div class="dropdown-menu">
+            <a class="dropdown-item" href="http://localhost:3000/courses/create">Đăng khoá học</a>
+            <a class="dropdown-item" href="http://localhost:3000/me/stored/courses">Khoá học của tôi</a>
+            <a class="dropdown-item" href="http://localhost:3000/news">News</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Đăng Xuất</a>
+          </div>
+        </li>
       </ul>
     </div>
   </div>
