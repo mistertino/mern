@@ -9,17 +9,17 @@
                 <th scope="col">#</th>
                 <th scope="col">Tên khoá học</th>
                 <th scope="col">Level</th>
-                <th scope="col">Thời gian tạo</th>
+                <th scope="col">Thời gian xoá</th>
                 <th></th>
             </tr>
         </thead>
         <tbody>
-            {{#each courses}}
+           {{#each courses}} 
             <tr>
                 <th scope="row">{{sum @index 1}}</th>
                 <td>{{this.name}}</td>
                 <td>{{this.level}}</td>
-                <td>{{this.createdAt}}</td>
+                <td>{{this.deletedAt}}</td>
                 <td>
                     <button type="button" class="btn btn-light">
                         <a style="text-decoration: none;" href="" class="btn-restore" data-id="{{this._id}}">Khôi phục</a>
@@ -72,8 +72,7 @@
     var btnDeleteCourse = document.getElementById('btn-delete-course')
     var deleteForm = document.forms['delete-course-form']
     var restoreForm = document.forms['restore-course-form']
-    var restoreBtn = $('.btn-restore')
-
+    var restoreBtn = $('.btn-restore') 
     $('#delete-course-modal').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget)
       courseId = button.data('id')
@@ -84,7 +83,7 @@
      deleteForm.submit()
     } 
     
-    restoreBtn.click(function (e) {
+    restoreBtn.click(function (e) { 
       e.preventDefault()
       var courseId = $(this).data('id')
       restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH'

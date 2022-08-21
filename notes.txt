@@ -956,9 +956,28 @@
 											- Sửa  deleteForm.action = '/courses/' + courseId + '/force?_method=DELETE'
 												> để thêm action khi submit form delete (được tạo sẵn vì copy) trả về đường dẫn /course/:id/force?_method=DELETE với phương thức được override từ POST sang DELETE
 
-	
-	
-
+- 33. Deleted count documents	
+	- Sử dụng phương thức countDocumentsDeleted() của thư viện mongoose-delete để đếm số bản ghi đã xoá
+		- Tại file src\app\controllers\MeController.js:
+			- Tại phương thức storedCourses():
+				storedCourses(req, res, next) {
+					Promise.all([Course.find({}), Course.countDocumentsDeleted()])
+						.then(([courses, deletedCount]) =>
+							res.render('me/stored-courses', {
+								deletedCount,
+								courses: multipleMongooseToObject(courses),
+							}),
+						)
+						.catch(next);
+				
+				}
+					> để gộp 2 phương thức find() và countDocumentsDeleted() (find() đã được tạo từ bài trước)-(countDocumentsDeleted() sẽ trả về số bản ghi đã xoá)
+					> .then(([courses, deletedCount]) giá trị trả về của 2 phương thức được gán vào 2 biến tương ứng theo thứ tự
+					> Sau đó truyền vào view stored-courses.hbs 2 biến courses và deletedCount
+		
+		- Tại src\resources\views\me\stored-courses.hbs
+			- để gọi biến deletedCount đã truyền lên giao diện sử dụng {{deletedCount}}
+				<a href="/me/trash/courses">Thùng rác ({{deletedCount}})</a>
 	
 		
 	
