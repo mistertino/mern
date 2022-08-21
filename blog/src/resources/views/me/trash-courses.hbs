@@ -1,7 +1,7 @@
 <div class="mt-4">
     <div >
-    <h3>Khoá học của tôi</h3>
-    <a href="/me/trash/courses">Thùng rác</a>
+    <a href="/me/stored/courses">Danh sách khoá học</a>
+    <h3>Khoá học đã xoá</h3>
     </div>
     <table class="table mt-4">
         <thead>
@@ -22,18 +22,17 @@
                 <td>{{this.createdAt}}</td>
                 <td>
                     <button type="button" class="btn btn-light">
-                        <a style="text-decoration: none;" href="/courses/{{this._id}}/edit">Sửa</a>
+                        <a style="text-decoration: none;" href="" class="btn-restore" data-id="{{this._id}}">Khôi phục</a>
                     </button>
                     <button type="button" class="btn btn-light" data-toggle="modal" data-target="#exampleModal">
-                        <a style="text-decoration: none;" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-course-modal" href="">Xoá</a>
+                        <a style="text-decoration: none;" data-toggle="modal" data-id="{{this._id}}" data-target="#delete-course-modal" href="">Xoá vĩnh viễn</a>
                     </button>
                 </td>
             </tr>
             {{else}}
             <tr>
               <td colspan="5" class="text-center">
-                Bạn chưa đăng khoá học nào.
-                <a href="/courses/create">Đăng khoá học</a>
+                Thùng rác trống.
               </td>
             </tr>
             {{/each}}
@@ -52,7 +51,7 @@
         </button>
       </div>
       <div class="modal-body">
-        Xác nhận xoá khoá học?
+        Hành vi này sẽ xoá vĩnh viễn khoá học. Xác nhận?
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Huỷ</button>
@@ -62,14 +61,18 @@
   </div>
 </div>
 
-{{!-- Hidden form --}}
+{{!--Empty form --}}
 <form name="delete-course-form" method="post"></form>
+<form name="restore-course-form" method="post"></form>
+
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     var courseId;
     var btnDeleteCourse = document.getElementById('btn-delete-course')
     var deleteForm = document.forms['delete-course-form']
+    var restoreForm = document.forms['restore-course-form']
+    var restoreBtn = $('.btn-restore')
 
     $('#delete-course-modal').on('show.bs.modal', function (event) {
       var button = $(event.relatedTarget)
@@ -77,8 +80,15 @@
     })
 
     btnDeleteCourse.onclick = function () {
-     deleteForm.action = '/courses/' + courseId + '?_method=DELETE'
+     deleteForm.action = '/courses/' + courseId + '/force?_method=DELETE'
      deleteForm.submit()
     } 
+    
+    restoreBtn.click(function (e) {
+      e.preventDefault()
+      var courseId = $(this).data('id')
+      restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH'
+      restoreForm.submit()
+    })
   })
 </script>

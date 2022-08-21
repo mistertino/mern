@@ -842,7 +842,113 @@
 					> để khi nút Xác nhận được nhấn (btnDeleteCourse.onclick) thỳ thẻ <form> sẽ được thêm action (deleteForm.action) và submit(deleteForm.submit())
 					> '/courses/' + courseId + '?_method=DELETE' : gọi route tới /courses/:id?_method=DELETE với :id là biến courseId và ?_method=DELETE là override sang phương thức DELETE đã làm tương tự với PUT ở bài 30
 			
-			
+32. Soft delete? (Xoá mềm - Sử dụng cho những dữ liệu nhạy cảm cần lưu lại ở database khi đã xoá)
+		>>> npm i mongoose-delete
+		
+		- Tại file src\app\models\Course.js:
+			const mongooseDelete = require('mongoose-delete');
+				> để require thư viện mongoose-delete
+				
+			Course.plugin(mongooseDelete);
+				> để thêm plugin vào Course (gắn plugin vào sau khi tạo Course = new Schema)
+				
+		- Tại src\app\controllers\CourseController.js:
+			- Tại phương thức delete đã tạo sửa Course.deleteOne thành Course.delete
+				> Course.delete: sử dụng phương thức delete của thư viện mongoose-delete (delete ở đây mà xoá mềm - tại database sẽ đc tạo thêm 1 field delete: true)
+		
+		- Để chỉ show ra những bản ghi chưa xoá mềm: (Bước trên chỉ sửa field delete những bản ghi bị xoá thành true)
+			- Tại file src\app\models\Course.js:
+				- Thêm một đối số vào plugin của Course:
+					Course.plugin(mongooseDelete,{ overrideMethods: 'all' });
+						> để ghi đè lên phương thức như: find, findOne,.... của mongoose (không lấy những bản ghi với điều kiện delete: true - có thế viết: overrideMethods: 'true')
+				
+				-Thêm deleteAt: true vào đối số vừa thêm:
+					{ overrideMethods: 'all', deleteAt: true}
+						> để tạo thêm một field ghi thời gian xoá
+		- Show ra những bản ghi đã xoá mềm (để khôi phục hoặc xoá vĩnh viễn):
+			- Tạo route controller view tới /me/trash/courses
+				- Tại src\routes\me.js thêm một route tới /trash/courses với phương thức get và truyền vào controller phương thức trashCourses
+					router.get('/trash/courses', meController.trashCourses);
+
+				- Tại src\app\controllers\MeController.js thêm phương thức trashCourses render ra view trash-courses
+					trashCourses(req,res,next) {
+						Course.find({})
+							.then((courses) =>
+								res.render('me/trash-courses', {
+									courses: multipleMongooseToObject(courses),
+								}),
+							)
+							.catch(next);
+					}
+					
+				- Tại src\resources\views\me tạo 1 view trash-courses.hbs (copy file stored-courses.hbs - giao diện tương tự)
+					- Để lấy ra các bản ghi đã xoá:
+						- Tại src\app\controllers\MeController.js:
+							- sửa Course.find({}) thành Course.findDeleted({}) tại phương thức trashCourses
+								> để tìm những bản ghi đã xoá mềm (delete: true) và truyền vào view
+					
+					- Sửa nút Sửa, Xoá thành Khôi phục, Xoá vĩnh viễn (vì copy giao diện của stored-courses.hbs)
+						- Khôi phục:
+							- tại thẻ <a> của nút Khôi phục bỏ đường dẫn ở href, thêm  class="btn-restore" và attributes data-id="{{this._id}}"
+								> để nhận id tương ứng từ database vào nút Khôi phục
+							
+							- Tạo route, controller để thực hiện khôi phục:
+								- Tại src\routes\courses.js:
+									router.patch('/:id/restore', coursesController.restore);
+										> để tạo route tới /:id/restore với thường thức patch và truyền vào CourseController phương thức restore
+											> sử dụng phương thức patch vì ở đây chỉ cần update lại 1 field delete của database
+											
+								- Tại src\app\controllers\CourseController.js tạo phương thức restore:
+									restore(req, res, next) {
+										Course.restore({ _id: req.params.id })
+											.then(()=> res.redirect('back'))
+											.catch(next)
+									}
+										> Course.restore để trả lại giá trị của field delete về false
+							
+							- Tạo 1 form rỗng 
+								<form name="restore-course-form" method="post"></form>
+									> để thực hiện hành vi submit khi ấn nút Khôi phục
+									
+							- Tại phần script
+								var restoreBtn = $('.btn-restore') 
+									> dùng JQuery để gán các nút Khôi phục vào biến restoreBtn
+									
+								var restoreForm = document.forms['restore-course-form']
+									> để gán form rỗng vừa tạo vào biến restoreForm
+									
+								restoreBtn.click(function (e) {
+								  e.preventDefault()
+								  var courseId = $(this).data('id')
+								  restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH'
+								  restoreForm.submit()
+								})
+									> restoreBtn.click để bắt sự kiện click cho nút khôi phục
+									> e.preventDefault() để bỏ hành vi mặc định của thẻ <a> trong nút Khôi phục (khi ấn vào thẻ <a> sẽ trỏ đến đường dẫn trong href)
+									> var courseId = $(this).data('id') : dùng JQuery gán id lấy từ attributes add-id của thẻ a vào biến courseId
+									> restoreForm.action = '/courses/' + courseId + '/restore?_method=PATCH' : để thêm action khi submit form restore trả về đường dẫn /course/:id/restore?_method=PATCH với phương thức được override từ POST sang PATCH (?_method=PATCH)
+						
+						- Xoá vĩnh viễn:
+							- Tạo một route và controller để thực hiện xoá vĩnh viễn:
+								- Tại src\routes\courses.js:
+									router.delete('/:id/force', coursesController.forceDelete);
+										> để tạo một route tới /:id/force với phương thức delete và truyền vào CourseController phương thức forceDelete
+								
+								- Tại src\app\controllers\CourseController:
+									forceDelete(req, res, next) {
+										Course.deleteOne({ _id: req.params.id })
+											.then(()=> res.redirect('back'))
+											.catch(next)
+									}
+										> để tạo phương thức forceDelete
+											> Course.deleteOne : để xoá 1 bản ghi tại database (deleteOne được sử dụng của thư viện mongoose)
+								
+								-Tại src\resources\views\trash-courses.hbs
+									- phần script:
+										- trong funtion của btnDeleteCourse.onclick (được có sẵn vì copy từ stored-courses.hbs)
+											- Sửa  deleteForm.action = '/courses/' + courseId + '/force?_method=DELETE'
+												> để thêm action khi submit form delete (được tạo sẵn vì copy) trả về đường dẫn /course/:id/force?_method=DELETE với phương thức được override từ POST sang DELETE
+
 	
 	
 
