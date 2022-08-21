@@ -4,6 +4,13 @@
 		
 		- Ctrl+O để mở thư mục 'F:\MERN\project'
 			> Vì folder dự án gắn với git sẵn rồi nên chỉ mở folder dự án là sourcetree sẽ tự nhận
+		
+		- 
+			các byuowcs cậu vừa làm là:
+			1- commit code > để nó tạo sẵn 1 gói hàng đợi chuẩn bị push lên
+			2- pull code > lấy hết code mới nhất từ trên git về máy mình
+			3- push code > nếu 1 và 2 không xảy ra lỗi conflict thì push code OK, nghĩa là 1 & 2 hoà quyện code với nhau
+
 
 *******************************************************
 
@@ -767,7 +774,6 @@
 		- Tại thẻ <form> trong  file src\resources\views\courses\edit.hbs sửa như sau:
 			<form method="post" action="/courses/{{courses._id}}?_method=PUT">
 				> để submit form với phương thức PUT
-				> ?_method=PUT: ghi đè (override) phương thức PUT cho phương thức POST của form
 			
 		- Tạo route với phương thức put tại src\routes\courses.js :
 			router.put('/:id', coursesController.update);
