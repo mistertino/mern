@@ -1084,3 +1084,24 @@
 						> _id: { $in: req.body.courseIds}: vì courseIds là một mảng (có thể có nhiều checkbox được check) => dùng { $in: req.body.courseIds} để xét từng phần tử trong mảng courseIds 
 					> Dùng switch case để có thể áp dụng làm với nhiều option khác (restore, deleteOne,......)
 		
+- 35. Fix bug
+	- Tại file src\resources\views\me\stored-courses.hbs
+		- tại thẻ <button> của nút Thực hiện :
+			- bỏ class disabled vào thêm attributes disabled="disabled"
+				<button class="btn btn-primary check-all-submit-btn" disabled="disabled">
+					Thực hiện
+				  </button>
+				  > vì class disabled thêm ở bài trước chỉ là một class được bootstrap css sẵn màu sắc chứ ko thực sự là disabled
+				  
+		- Tại script:
+			- bỏ phương thức kiểm tra nút Thực hiện submit:  checkAllSubmitBtn.on('submit', function(e)
+				> vì nút Thực hiện đã disable thỳ ko thế submit nữa => ko cần kiểm tra
+			
+			- sửa lại function kiểm tra checkbox và enable cho nút Thực hiện:
+				function renderCheckAllSubmitBtn() {
+				  var checkedCount = $('input[name="courseIds[]"]:checked').length
+				  if (checkedCount > 0) {
+					checkAllSubmitBtn.attr('disabled', false)
+				  } else { checkAllSubmitBtn.attr('disabled', true)}
+				}    
+					> Nếu có một nút checkbox dược check (checkedCount > 1) thỳ attributes disabled sẽ bị remove (checkAllSubmitBtn.attr('disabled', false))
