@@ -978,8 +978,109 @@
 		- Tại src\resources\views\me\stored-courses.hbs
 			- để gọi biến deletedCount đã truyền lên giao diện sử dụng {{deletedCount}}
 				<a href="/me/trash/courses">Thùng rác ({{deletedCount}})</a>
-	
-		
-	
 				
+- 34. "Select all" with checkbox
+	- tại file src\resources\views\me\stored-courses.hbs
+		- Dùng bootstrap tạo 1 checkbox 1 thanh select 1 nút (nút disable)
+			[] Chọn tất cả [ -- Chọn hành động -- ] [Thực hiện] (Giao diện kiểu như này)
+			
+		- Select:
+			<select class="form-control form-control-sm select-checkbox-option" name="action" required>
+				<option value="">-- Chọn Hành động --</option>
+				<option value="delete">Xoá</option>
+			</select>
+			
+		- thêm checkbox thành vào đầu của thẻ <tr> trong phần tbody của table:
+				<td>
+                  <div class="form-check " >
+                    <input class="form-check-input" type="checkbox" value="{{this._id}}" name="courseIds[]">
+                  </div> 
+                </td>
+					> để tạo nút checkbox cho mỗi document được lấy từ database ở bài trước
+					> value="{{this._id}}" để gán id của từng document vào value (để mỗi check box tương ứng với một document)
+		
+		- Dùng jquery để tạo logic khi checkbox:
+			- đặt id cho checkbox Chọn tất cả: 
+				id="checkbox-all"
+				
+			- tạo thêm class check-all-submit-btn cho nút thực hiện
+				<button class="btn btn-primary check-all-submit-btn disabled">Thực hiện</button>
+			- Tại script:
+					var checkAllSubmitBtn = $('.check-all-submit-btn')
+						> gán nút Thực hiện vào biến checkAllSubmitBtn
+			
+					function renderCheckAllSubmitBtn() {
+					  var checkedCount = $('input[name="courseIds[]"]:checked').length
+					  if (checkedCount > 0) {
+						checkAllSubmitBtn.removeClass('disabled')
+					  } else { checkAllSubmitBtn.addClass('disabled')}
+					}   
+						> để tạo một function kiểm tra số nút checkbox của item đã check và trả về trạng thái của nút thực hiện (enable hay disable)
+							> Nếu có một checkbox nào được check thỳ nút Thực hiện sẽ hiện lên để submit
+			
+				    var checkboxAll = $('#checkbox-all')
+						> để gán nút checkbox cho biến checkboxAll
+						
+					var courseItemcheckbox = $('input[name="courseIds[]"]')
+						> để gán nút checkbox của các document
+				
+				- Để Chọn tất cả thỳ các nút check ở list document cũng được check tất cả:
+					checkboxAll.change(function() {
+						var isCheckedAll = $(this).prop('checked')
+						courseItemcheckbox.prop('checked', isCheckedAll)
+						renderCheckAllSubmitBtn()
+					  
+					}) 
+						> $(this).prop('checked') để kiểm tra sự kiện check của nút chọn tất cả (trả về true false)
+						> var isCheckedAll = $(this).prop('checked') gán giá trị boolean vào biến isCheckedAll
+						> courseItemcheckbox.prop('checked', isCheckedAll) : Nếu nút chọn toàn bộ được check (true) thỳ tất cả các nút checkbox của list bản ghi cũng sẽ tự động được check
+						> Sau đó gọi function renderCheckAllSubmitBtn() để hiển thị nút Thực hiện
+						
+				- Để khi tất cả các checkbox của list document được check thỳ nút Chọn tất cả cũng đc check:
+					courseItemcheckbox.change(function () {
+					  var isCheckedAll = courseItemcheckbox.length === $('input[name="courseIds[]"]:checked').length
+					  checkboxAll.prop('checked', isCheckedAll)
+					  renderCheckAllSubmitBtn()
+					})
+						> var isCheckedAll = courseItemcheckbox.length === $('input[name="courseIds[]"]:checked').length: để so sánh số nút đã check với tổng số nút tại list rồi gán vào biến isCheckedAll
+							> Nếu tất cả các nút ở list đã check hết (true) thỳ nút Chọn tất cả cũng được check
+							> Sau đó gọi function renderCheckAllSubmitBtn() để hiển thị nút Thực hiện
+				
+				- Tạo form chứa content của cả giao diện với phương thức method="post" action="/courses/handle-form-action":
+					<form name="container-form" method="post" action="/courses/handle-form-action" class="mt-4">
+						> để khi nhấn nút Thực hiện sẽ submit form chứa toàn bộ các nút checkbox
+						
+				- Để khi nút Thực hiện được hiện thị thỳ mới có thể submit form:
+					checkAllSubmitBtn.on('submit', function(e) {
+					  var isSubmitable = $(this).hasClass('disabled') //để kiểm tra xem nút Thực hiện có class disable hay ko (trả về true/ false)
+					  if (isSubmitable) {
+						e.preventDefault()
+					  }
+					})
+						> Khi nút thực hiện submit => kiểm tra xem nút hiển có hiện ko => nếu không hiện (có class="disable") thỳ ngăn nút Thực hiện submit
+
+		
+	- Tạo route và controller khi ấn nút Thực hiện
+		- Tại src\routes\courses.js:
+			- thêm một route /handle-form-action tương ứng với action của form (thêm trên route /:id vì có thể bị hiểu nhầm /handle-form-action là id)
+				router.post('/handle-form-action', coursesController.handleFormAction);
+					> Trỏ rotue tới courses/handle-form-action với phương thức post và truyền vào CourseController phương thức handleFormAction
+		
+		- Tại src\app\controllers\CourseController.js:
+			- Thêm phương thức handleFormAction:
+				handleFormAction(req, res, next) {
+					switch(req.body.action) {
+						case 'delete':
+							Course.delete({ _id: { $in: req.body.courseIds} })
+								.then(()=> res.redirect('back'))
+								.catch(next)
+							break;
+						default: 
+							res.json({message: 'Action invalid'})
+					}
+				}
+					> req.body.action : với action là value của một <option> trong <select name="action">  
+					> Course.delete({ _id: { $in: req.body.courseIds} }) : Xoá các document theo id được gửi lên request khi submit
+						> _id: { $in: req.body.courseIds}: vì courseIds là một mảng (có thể có nhiều checkbox được check) => dùng { $in: req.body.courseIds} để xét từng phần tử trong mảng courseIds 
+					> Dùng switch case để có thể áp dụng làm với nhiều option khác (restore, deleteOne,......)
 		
