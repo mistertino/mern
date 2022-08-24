@@ -1,33 +1,42 @@
 <form name="container-form" method="post" action="/courses/handle-form-action" class="mt-4">
     <div >
-    <h3>Khoá học của tôi</h3>
-    <a href="/me/trash/courses">Thùng rác ({{deletedCount}})</a>
-    <div class="mt-4 d-flex align-items-center">
-      <div class="form-check " >
-        <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
-        <label class="form-check-label"  for="checkbox-all">
-          Chọn tất cả
-        </label>
-      </div>  
+      <h3>Khoá học của tôi</h3>
+      <a href="/me/trash/courses">Thùng rác ({{deletedCount}})</a>
+      <div class="mt-4 d-flex align-items-center">
+        <div class="form-check " >
+          <input class="form-check-input" type="checkbox" value="" id="checkbox-all">
+          <label class="form-check-label"  for="checkbox-all">
+            Chọn tất cả
+          </label>
+        </div>  
 
-      <select class="form-control form-control-sm select-checkbox-option" name="action" required>
-        <option value="">-- Chọn Hành động --</option>
-        <option value="delete">Xoá</option>
-      </select>
+        <select class="form-control form-control-sm select-checkbox-option" name="action" required>
+          <option value="">-- Chọn Hành động --</option>
+          <option value="delete">Xoá</option>
+        </select>
 
-      <button class="btn btn-primary check-all-submit-btn" disabled="disabled">
-        Thực hiện
-      </button>
-    </div>
+        <button class="btn btn-primary check-all-submit-btn" disabled="disabled">
+          Thực hiện
+        </button>
+      </div>
     </div>
     <table class="table mt-4">
         <thead>
             <tr>
                 <th></th>
                 <th scope="col">#</th>
-                <th scope="col">Tên khoá học</th>
-                <th scope="col">Level</th>
-                <th scope="col">Thời gian tạo</th>
+                <th scope="col">
+                  Tên khoá học
+                  {{{sortable 'name' _sort}}}
+                </th>
+                <th scope="col">
+                  Level
+                  {{{sortable 'level' _sort}}}  
+                </th>
+                <th scope="col">
+                  Thời gian tạo
+                  {{{sortable 'createdAt' _sort}}}  
+                </th>
                 <th></th>
             </tr>
         </thead>

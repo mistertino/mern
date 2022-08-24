@@ -1105,3 +1105,165 @@
 				  } else { checkAllSubmitBtn.attr('disabled', true)}
 				}    
 					> Nếu có một nút checkbox dược check (checkedCount > 1) thỳ attributes disabled sẽ bị remove (checkAllSubmitBtn.attr('disabled', false))
+					
+-37. Sort middleware:
+	- Tại src\resources\views\me\stored-courses.hbs
+		- Tại cột Tên khoá học thêm một thẻ <a> với 1 icon: 
+			<th scope="col">
+                  Tên khoá học
+			  <a href="?_sort&column=name&type=asc"><span class="ti-arrows-vertical"></span></a>
+			</th>
+				> href="?_sort&column=name&type=asc" : để truyển query parameters lên url:
+					> _sort: là chắc năng sắp xếp (tên do mình tự định nghĩa)
+					> column: là cột với giá trị ở đây là name (cột name) (tên do mình tự định nghĩa - tại đây gán giá trị = name vì thẻ <a> đang ở cột Tên khoá học)
+					> type: là kiểu sắp xếp (tên do mình tự định nghĩa) với giá trị = desc (giá trị cũng tự định nghĩa desc/asc : tăng dần/ giảm dần)
+				
+	- Sắp xếp:
+		- Tại src\app\controllers\MeController.js
+			- Trong phương thức storedCourses(req, res, next)
+				- Kiểm ra xem đã truyền lên url _sort chưa:
+					if(req.query.hasOwnProperty('_sort')) {
+						res.json({message: 'successfully!!'})
+						return
+					}
+						> req.query.hasOwnProperty('_sort') : kiểm tra _sort có trên url ko
+			
+				- Để sắp xếp:
+					- Lấy phương thức find data từ database và gán vào biến courseQuery
+						let courseQuery = Course.find({})
+							> Course.find({}) là phương thức lấy ra data từ database học ở bài trước
+							> dùng let để có thể gán lại giá trị cho biến (ko dùng const)
+							> sau khi khai báo thay Course.find({}) bằng biến courseQuery ở phương thức Promise.all:
+								Promise.all([courseQuery, Course.countDocumentsDeleted()])
+									> để có thể lấy được giá trị đã sắp xếp vào truyền vào view
+						
+					- Trong if(req.query.hasOwnProperty('_sort')):
+						courseQuery = courseQuery.sort({
+							name : 'asc'
+						})
+							> để sắp xếp giá trị trong field name của database theo asc (tăng dần)
+							> courseQuery.sort là hàm sắp xếp của mongoose (sort ({tên cột: 'kiểu sắp xếp'})
+							> Đây là demo sắp xếp chưa liên quan gì đến giá trị của url
+					
+						- Để truyền biến động từ url:
+							- Trong courseQuery.sort():
+								[req.query.column]: req.query.type
+									> req.query.column : giá trị của column trên url ('?_sort&column=name&type=asc' tại đây = name tương ứng với field name trong database)
+									> req.query.type: giá trị của type trên url ('?_sort&column=name&type=asc' tại đây = asc - có thể đổi thành desc trên url để xem thử kiểu sắp xếp giảm dần)
+	
+	-Sử dụng middleware: 
+		-Tạo file folder như sau:
+			src\app\middlewares\SortMiddleware.js
+				> để tạo một middleware cho việc sắp xếp
+			
+		-Tại src\app\middlewares\SortMiddleware.js:
+			module.exports = function SortMiddleware(req, res, next) {
+				res.locals._sort = {
+					enabled: false,
+					type: 'default'
+				}
+
+				if (req.query.hasOwnProperty('_sort')) {
+					res.locals._sort.enabled = true;
+					res.locals._sort.type = req.query.type
+					res.locals._sort.column = req.query.column
+				}
+				next()
+			}	
+				> res.locals: một thuộc tính của express giúp truyền biến vào view (biến có thể là đường dẫn, vv) và chỉ nằm trong một yêu cầu (request)
+				> res.locals._sort = {
+					enabled: false,
+					type: 'default'
+				}
+					> để định nghĩa cho biến res.locals._sort
+						> enabled: false: mặc định chức năng sắp xếp không hoạt động
+						> type: 'default': mặc định type
+					
+				if (req.query.hasOwnProperty('_sort')) {
+					res.locals._sort.enabled = true;
+					res.locals._sort.type = req.query.type
+					res.locals._sort.column = req.query.column
+				}
+					> Kiểm tra trên url (req.query) nếu có _sort thỳ bật chức năng sort (res.locals._sort.enabled = true) và kiểu sắp xếp,cột được trả về từ yêu cầu trên url (req.query.type ,req.query.column)
+			
+		- Tại src\index.js:
+			- Require middleware vừa tạo:
+				const SortMiddleware = require('./app/middlewares/SortMiddleware')
+
+			app.use(SortMiddleware)
+				> để sử dụng middleware cho toàn bộ chương trình:
+				
+		-Có thể kiếm tra xem biến res.locals._sort đã truyền vào view chưa:
+			- Tại views stored-courses.hbs truyền vào biến _sort:
+				{{_sort.type}}
+					> biến sẽ trả về giá trị của type tương ứng trên url (thay đổi type='giá trị bất kì' trên '?_sort&column=name&type=asc' để thấy)
+		
+		- Sử dụng helpers của handlebars để	sử lý thay đổi icon khi ấn vào để sắp xếp (mỗi khi ấn vào icon (là thẻ <a> chứa icon) sẽ thay đổi kiểu sắp xếp và icon cũng thay đổi theo kiểu sắp xếp)
+			- Tại src/index.js:
+				- Tại app.engine() 
+					- Trong engine thêm helpers như sau:
+						app.engine(
+							'.hbs',
+							engine({
+								extname: '.hbs',
+								helpers: {
+									sortable: (field, sort) => {
+										const sortType = field === sort.column ? sort.type: 'default'
+										const icons = {
+											default : 'ti-arrows-vertical',
+											asc: 'ti-download',
+											desc: 'ti-upload'
+										}
+										const types ={
+											default : 'desc',
+											asc: 'desc',
+											desc: 'asc'
+										}
+										const icon = icons[sortType]
+										const type = types[sortType]
+										return `<a href="?_sort&column=${field}&type=${type}"><span class="${icon}"></span></a>`
+									}
+								},
+							}),
+						);
+							> sortable: (field, sort) => {} : khai báo một helpers tên là sortable là function với 2 tham số field, sort (sẽ được tryền vào view tương ứng: field là tên field trong database, sort là biến _sort được tạo ở middleware)
+							
+								const sortType = field === sort.column ? sort.type: 'default'
+									> để kiểm tra tham số field(field trong database) có bằng sort.column (giá trị của column trên url) không? Nếu không có giá trị tương ứng sẽ trả về 'default' 
+									
+								const icons = {
+									default : 'ti-arrows-vertical',
+									asc: 'ti-download',
+									desc: 'ti-upload'
+								}
+									> để cấu hình các dạng icon theo deafault, asc, desc
+								
+								const types ={
+									default : 'desc',
+									asc: 'desc',
+									desc: 'asc'
+								}
+									> để cấu hình type deafault, asc, desc
+									
+								const icon = icons[sortType]
+								const type = types[sortType]	
+									> để khai báo 2 biến icon và type với giá trị được lấy trong các cấu hình tương ứng với sortType (Nếu sortType='asc' thỳ icon sẽ đc lấy ra kiểu icon asc và type cũng lấy ra kiểu asc  )
+								
+								return `<a href="?_sort&column=${field}&type=${type}"><span class="${icon}"></span></a>`
+									> để khi gọi helper sortable sẽ trả ra icon với các giá trị truyền vào tương ứng
+									
+				- Tại view stored-courses:
+					-Gọi helper sortable vừa tạo thay cho thẻ <a> chứa icon đã tạo từ trc:
+						- thay thế thẻ <a> chứa icon bằng {{{sortable 'name' _sort}}}
+							> Trong {{{sortable 'name' _sort}}}: > sortable để gọi ra function return ra thẻ <a> chứa icon
+																 > 'name' và _sort là 2 tham số truyền vào function trên với 'name' là tên của field trong database, _sort là biến được lấy từ middleware (sort.column, sort.type trong function trên tương đương _sort.column, _sort.type)	
+				
+						- Tương tự gọi helper với các cột còn lại để thêm icon sắp xếp: {{{sortable 'level' _sort}}}  , {{{sortable 'createdAt' _sort}}}  
+						
+	=> Khi bấm vào icon sắp xếp tại các cột -> gửi lên url request với phương thức _sort column tương ứng với cột với type mặc định ban đầu là desc / cùng lúc controller sẽ thực hiện sắp xếp theo tên field = giá trị column , kiểu sắp xếp = giá trị type trên url 
+		-> middleware kiểm tra trên url có _sort -> gắn vào biến _sort các cấu hình column, type -> view gọi helpers sortable với field và _sort để thay đổi icon(thay đổi href và class của icon)  -> lúc này icon đã được thay đường dẫn và kiểu icon 
+				
+				
+						
+					
+				
