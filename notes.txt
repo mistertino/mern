@@ -1265,5 +1265,31 @@
 				
 				
 						
+- 38. Autoincrement _id field					
+		>>> npm install --save mongoose-sequence
+			> cài thư viện mongoose-sequence
+			
+		- tại src\app\models\Course.js:
+			const AutoIncrement = require('mongoose-sequence')(mongoose);
+				> để require thư viện mongoose-sequence
+			
+		- tại phần khai báo Schame Course:
+			- ở option thứ nhất (khai báo các field):
+				_id: {type: Number},
+					> để khai báo kiểu dữ liệu cho field _id
+			
+			- ở option thứ 2:
+				_id: false
+					> để mongodb ko tự thêm id vào field _id nữa
 					
-				
+		- Course.plugin(AutoIncrement)
+			> để apply plugin vào Chema
+		
+		=> thư viện sẽ tự thêm id tăng dần cho mỗi document (bản ghi)
+						
+		- Tại src\resources\views\me\stored-courses.hbs:
+			- Dùng helper sortable đã tạo ở bài trước để thêm icon với chức năng sắp xếp: 
+                  {{{sortable '_id' _sort}}}
+			
+			- Dùng {{this._id}} để gọi ra giá trị của field _id trong database
+		

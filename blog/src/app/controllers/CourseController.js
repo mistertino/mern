@@ -16,14 +16,14 @@ class CoursesController {
     create(req, res, next) {
         res.render('courses/create');
     }
-    //[POST] /course/store
+    //[POST] /stored/courses
     store(req, res, next) {
         // res.json(req.body)
         const formData = req.body;
         const courses = new Course(formData);
         courses
             .save()
-            .then(() => res.redirect('/'))
+            .then(() => res.redirect('/me/stored/courses'))
             .catch(next);
     }
 
@@ -47,34 +47,34 @@ class CoursesController {
     //[DELETE] /course/:id
     delete(req, res, next) {
         Course.delete({ _id: req.params.id })
-            .then(()=> res.redirect('back'))
-            .catch(next)
+            .then(() => res.redirect('back'))
+            .catch(next);
     }
 
     //[DELETE] /course/:id/force
     forceDelete(req, res, next) {
         Course.deleteOne({ _id: req.params.id })
-            .then(()=> res.redirect('back'))
-            .catch(next)
+            .then(() => res.redirect('back'))
+            .catch(next);
     }
 
-     //[PATCH] /course/:id/restore
-     restore(req, res, next) {
+    //[PATCH] /course/:id/restore
+    restore(req, res, next) {
         Course.restore({ _id: req.params.id })
-            .then(()=> res.redirect('back'))
-            .catch(next)
+            .then(() => res.redirect('back'))
+            .catch(next);
     }
 
     //[POST] /course/handle-form-action
     handleFormAction(req, res, next) {
-        switch(req.body.action) {
+        switch (req.body.action) {
             case 'delete':
-                Course.delete({ _id: { $in: req.body.courseIds} })
-                    .then(()=> res.redirect('back'))
-                    .catch(next)
+                Course.delete({ _id: { $in: req.body.courseIds } })
+                    .then(() => res.redirect('back'))
+                    .catch(next);
                 break;
-            default: 
-                res.json({message: 'Action invalid'})
+            default:
+                res.json({ message: 'Action invalid' });
         }
     }
 }
